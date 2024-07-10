@@ -77,7 +77,7 @@
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
     <script>
-        function fetchData(file, callback) {
+        function fetchData(file, cells, callback) {
             const xhr = new XMLHttpRequest();
             xhr.open('GET', file, true);
             xhr.responseType = 'arraybuffer';
@@ -90,27 +90,37 @@
                 const sheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[sheetName];
 
-                // Convert the worksheet to JSON
-                const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                // Extract data from specific cells
+                const extractedData = cells.map(cell => worksheet[cell] ? worksheet[cell].v : null);
 
-                // Extract data from C1 and C2 columns
-                const dates = jsonData.slice(1).map(row => row[0]);
-                const values = jsonData.slice(1).map(row => parseFloat(row[1].toString().replace(',', '.')));
-
-                callback(dates, values);
+                callback(extractedData);
             };
 
             xhr.send();
         }
 
-        function renderBarChart(chartId, title, dates, values) {
+        function renderBarChart(chartId, title, dates, ficonActivity, zHyperlinkActivity, averageActivity) {
             const chartData = [
                 {
                     x: dates,
-                    y: values,
+                    y: ficonActivity,
                     type: 'bar',
-                    name: 'Value',
+                    name: 'FICON I/O Activity',
                     marker: { color: '#ff0000' }
+                },
+                {
+                    x: dates,
+                    y: zHyperlinkActivity,
+                    type: 'bar',
+                    name: 'zHyperlink I/O Activity',
+                    marker: { color: '#00ff00' }
+                },
+                {
+                    x: dates,
+                    y: averageActivity,
+                    type: 'bar',
+                    name: 'Average I/O Activity',
+                    marker: { color: '#0000ff' }
                 }
             ];
 
@@ -118,47 +128,72 @@
                 title: title,
                 barmode: 'group',
                 xaxis: { title: 'Date' },
-                yaxis: { title: 'Value' }
+                yaxis: { title: 'I/O Activity' }
             };
 
             Plotly.newPlot(chartId, chartData, layout);
         }
 
-        function renderLineChart(chartId, title, dates, values) {
+        function renderLineChart(chartId, title, dates, ficonActivity, zHyperlinkActivity, averageActivity) {
             const chartData = [
                 {
                     x: dates,
-                    y: values,
+                    y: ficonActivity,
                     type: 'scatter',
                     mode: 'lines+markers',
-                    name: 'Value',
+                    name: 'FICON I/O Activity',
                     line: { color: '#ff0000' }
+                },
+                {
+                    x: dates,
+                    y: zHyperlinkActivity,
+                    type: 'scatter',
+                    mode: 'lines+markers',
+                    name: 'zHyperlink I/O Activity',
+                    line: { color: '#00ff00' }
+                },
+                {
+                    x: dates,
+                    y: averageActivity,
+                    type: 'scatter',
+                    mode: 'lines+markers',
+                    name: 'Average I/O Activity',
+                    line: { color: '#0000ff' }
                 }
             ];
 
             const layout = {
                 title: title,
                 xaxis: { title: 'Date' },
-                yaxis: { title: 'Value' }
+                yaxis: { title: 'I/O Activity' }
             };
 
             Plotly.newPlot(chartId, chartData, layout);
         }
 
-        fetchData('M://STORAGESISTEMLERI//RMF Reports//2024_06_Haziran//14_Haziran_RMF.xlsx', (dates, values) => {
-            renderBarChart('ioActivityChart', 'FICON vs zHyperlink vs Average I/O Activity', dates, values);
+        // Fetch and render data for each chart
+        fetchData('M://STORAGESISTEMLERI//RMF Reports//2024_06_Haziran//14_Haziran_RMF.xlsx', ['C4', 'C6', 'C8'], data => {
+            const [dates, ficonActivity, zHyperlinkActivity] = data;
+            const averageActivity = ficonActivity.map((_, i) => (ficonActivity[i] + zHyperlinkActivity[i]) / 2);  // Compute average
+            renderBarChart('ioActivityChart', 'FICON vs zHyperlink vs Average I/O Activity', dates, ficonActivity, zHyperlinkActivity, averageActivity);
         });
 
-        fetchData('data1.xlsx', (dates, values) => {
-            renderBarChart('ioActivityChart1', 'FICON vs zHyperlink vs Average I/O Activity (Data1)', dates, values);
+        fetchData('data1.xlsx', ['A1', 'A2', 'A3'], data => {
+            const [dates, ficonActivity, zHyperlinkActivity] = data;
+            const averageActivity = ficonActivity.map((_, i) => (ficonActivity[i] + zHyperlinkActivity[i]) / 2);  // Compute average
+            renderBarChart('ioActivityChart1', 'FICON vs zHyperlink vs Average I/O Activity (Data1)', dates, ficonActivity, zHyperlinkActivity, averageActivity);
         });
 
-        fetchData('data2.xlsx', (dates, values) => {
-            renderLineChart('ioActivityChart2', 'FICON vs zHyperlink vs Average I/O Activity (Data2)', dates, values);
+        fetchData('data2.xlsx', ['B3', 'B7', 'B11'], data => {
+            const [dates, ficonActivity, zHyperlinkActivity] = data;
+            const averageActivity = ficonActivity.map((_, i) => (ficonActivity[i] + zHyperlinkActivity[i]) / 2);  // Compute average
+            renderLineChart('ioActivityChart2', 'FICON vs zHyperlink vs Average I/O Activity (Data2)', dates, ficonActivity, zHyperlinkActivity, averageActivity);
         });
 
-        fetchData('data3.xlsx', (dates, values) => {
-            renderLineChart('ioActivityChart3', 'FICON vs zHyperlink vs Average I/O Activity (Data3)', dates, values);
+        fetchData('data3.xlsx', ['F3', 'F6', 'F9'], data => {
+            const [dates, ficonActivity, zHyperlinkActivity] = data;
+            const averageActivity = ficonActivity.map((_, i) => (ficonActivity[i] + zHyperlinkActivity[i]) / 2);  // Compute average
+            renderLineChart('ioActivityChart3', 'FICON vs zHyperlink vs Average I/O Activity (Data3)', dates, ficonActivity, zHyperlinkActivity, averageActivity);
         });
     </script>
 </body>
