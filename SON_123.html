@@ -64,12 +64,12 @@
         </div>
 
         <div class="section">
-            <h2>(Data3)</h2>
+            <h2>(Data2)</h2>
             <div id="ioActivityChart2" class="chart"></div>
         </div>
 
         <div class="section">
-            <h2>(Data4)</h2>
+            <h2>(Data3)</h2>
             <div id="ioActivityChart3" class="chart"></div>
         </div>
     </div>
@@ -177,7 +177,7 @@
             Plotly.newPlot(chartId, chartData, layout);
         }
 
-        fetchData('data.xlsx', (dates, ficonActivity, zHyperlinkActivity, averageActivity) => {
+        fetchData('M://STORAGESISTEMLERI//RMF Reports//2024_06_Haziran//14_Haziran_RMF.xlsx', ['C4', 'C6'], (dates, ficonActivity, zHyperlinkActivity, averageActivity) => {
             renderBarChart('ioActivityChart', 'FICON vs zHyperlink vs Average I/O Activity', dates, ficonActivity, zHyperlinkActivity, averageActivity);
         });
 
